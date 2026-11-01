@@ -22,7 +22,7 @@
 - Frontend: Single self-contained `index.html` — HTML, CSS, vanilla JavaScript, Web Audio API. No framework, no build step, no dependencies (per UAES-001 KISS; the React/Tailwind/shadcn foundation in UAES-UI-001 is a recommendation, expressly not a mandate for non-React projects)
 - Backend: None
 - Database: None (browser localStorage only)
-- Hosting/deployment: Cloudflare Pages, project `fairpick`, Git-connected to this repository (production branch `main`, no build command, output = repository root). Live: https://fairpick.pages.dev
+- Hosting/deployment: Cloudflare Pages, project `fair-pick`, Git-connected to this repository (production branch `main`, no build command, output = repository root). Live: https://fair-pick.pages.dev (the project name differs from the repo name because the plain `fairpick` subdomain was already taken on Cloudflare)
 - Testing: `node --check` on the extracted script; manual flow tests (pick with spin on/off, round rollover, new round, save/load/delete lists incl. invalid attempts, sample class, clear, fullscreen, keyboard Space/N/F); accessibility review against WCAG 2.2 AA (contrast, focus visibility, 44px touch targets, status never conveyed by colour alone, screen-reader announcements on state changes only)
 
 ## Exceptions
@@ -37,4 +37,4 @@
 - Architecture: This record — single-file application, no backend
 - Decisions: The Exceptions table above
 - Security: This record — no personal data is collected, stored, or transmitted; the only network requests are Google Fonts
-- Deployment: Cloudflare Pages project `fairpick`, Git-connected — pushes to `main` deploy automatically; the Deployments tab in Cloudflare is the release record, and rollback is available there per deployment
+- Deployment: Cloudflare Pages project `fair-pick`, Git-connected — pushes to `main` deploy automatically; the Deployments tab in Cloudflare is the release record, and rollback is available there per deployment

@@ -4,7 +4,7 @@
 
 Every teacher knows the moment: the "random" picker lands on the same confident kid for the third time while the quiet ones never get a turn. FairPick fixes that — it remembers who has been picked, so **nobody gets picked twice until everyone has had a turn**. Then a new round begins.
 
-🔗 **Live:** https://fairpick.pages.dev
+🔗 **Live:** https://fair-pick.pages.dev
 
 ## Why it's different
 
