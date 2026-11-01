@@ -3,131 +3,288 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FairPick — The random student picker that's actually fair</title>
+<title>Teacher Tools: FairPick</title>
 <meta name="description" content="A free random name picker for teachers that remembers who has been picked — nobody twice until everyone has had a turn. No sign-up, works offline.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+<meta name="theme-color" content="#5c2438">
+<meta property="og:title" content="Teacher Tools: FairPick">
+<meta property="og:description" content="The random student picker that's actually fair — nobody twice until everyone has had a turn. Free for teachers — no sign-up.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='12' y='12' width='76' height='76' rx='18' fill='none' stroke='%235c2438' stroke-width='7'/><circle cx='33' cy='33' r='8' fill='%23c39a3f'/><circle cx='67' cy='67' r='8' fill='%23c39a3f'/><circle cx='67' cy='33' r='8' fill='%23256f66'/><circle cx='33' cy='67' r='8' fill='%23256f66'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --wine:#682d40; --wine-dark:#4e2130; --gold:#d4a94e; --teal:#2e7d74;
-    --paper:#faf6ef; --ink:#2b2320; --muted:#8a7a72; --card:#ffffff;
+    --wine:#5c2438; --wine-deep:#451a2a; --gold:#c39a3f; --teal:#256f66;
+    --paper:#faf7f2; --surface:#ffffff; --ink:#262019; --muted:#75634f; --hairline:#e9dfd2; --gold-text:#9a742a;
+    --shadow:0 1px 2px rgba(38,32,25,.05), 0 16px 40px -16px rgba(92,36,56,.22);
+    --r-lg:26px; --r-md:18px; --r-sm:12px;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   body{
-    font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
     background:var(--paper); color:var(--ink);
-    min-height:100vh; display:flex; flex-direction:column; align-items:center;
-    padding:20px 16px 28px;
+    min-height:100dvh; display:flex; flex-direction:column; align-items:center;
+    padding:16px 16px 14px; position:relative;
   }
-  header{text-align:center}
-  header h1{font-size:clamp(22px,3.4vw,32px);color:var(--wine)}
-  header h1 span{color:var(--gold)}
-  header p{color:var(--muted);font-size:clamp(12px,1.7vw,15px);margin-top:2px}
-  main{width:100%;max-width:980px;flex:1;display:flex;flex-direction:column;align-items:center}
-  .stage{
-    margin-top:18px;width:100%;background:var(--card);border:2px solid #eee0cd;border-radius:24px;
-    padding:34px 20px 28px;text-align:center;box-shadow:0 10px 30px rgba(104,45,64,.08);
+  body::before{
+    content:"";position:fixed;inset:-12%;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(1000px 520px at 85% -10%, rgba(195,154,63,.18), transparent 62%),
+      radial-gradient(900px 560px at -10% 110%, rgba(37,111,102,.13), transparent 62%),
+      radial-gradient(700px 420px at 50% 115%, rgba(92,36,56,.10), transparent 65%);
+    animation:glowDrift 26s ease-in-out infinite alternate;
   }
-  #roundLabel{font-size:13px;font-weight:700;letter-spacing:2.2px;text-transform:uppercase;color:var(--teal)}
+  @keyframes glowDrift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(-2.5%,2.5%,0) scale(1.07)}}
+  header,main,footer{position:relative;z-index:1}
+  header{text-align:center;max-width:720px}
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold-text)}
+  header h1{
+    font-family:"Outfit",sans-serif;font-weight:800;letter-spacing:-.5px;
+    font-size:clamp(24px,3.4vw,32px);color:var(--wine);margin-top:4px;line-height:1.05;
+  }
+  header h1 .accent{color:var(--gold-text)}
+  header p{color:var(--muted);font-size:13.5px;margin:4px auto 0;line-height:1.45;max-width:560px}
+  main{width:100%;max-width:980px;display:flex;flex-direction:column;align-items:center}
+  .card{
+    background:linear-gradient(155deg, rgba(255,255,255,.78), rgba(255,255,255,.52));
+    -webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);
+    border:1px solid rgba(255,255,255,.75);border-radius:var(--r-lg);
+    box-shadow:0 24px 60px -24px rgba(92,36,56,.35), inset 0 1px 0 rgba(255,255,255,.85);
+    padding:clamp(18px,3vw,28px);position:relative;
+    display:flex;flex-direction:column;align-items:center;width:100%;margin-top:12px;text-align:center;
+  }
+  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .card,.panel{background:rgba(255,255,255,.94)}
+    .chip,.btn,.stage-pill,.options label{background:rgba(255,255,255,.92)}
+    .info-panel{background:rgba(255,255,255,.96)}
+  }
+  .info-wrap{position:absolute;top:14px;left:14px;z-index:6}
+  .info-btn{
+    width:42px;height:42px;border-radius:14px;flex:none;display:inline-flex;align-items:center;justify-content:center;
+    border:1px solid rgba(92,36,56,.16);background:rgba(255,255,255,.62);color:var(--wine);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    box-shadow:0 2px 0 rgba(214,196,168,.8), 0 8px 14px -10px rgba(92,36,56,.4);transition:all .16s ease;cursor:pointer;
+  }
+  .info-btn svg{width:19px;height:19px}
+  .info-btn:hover{border-color:var(--wine)}
+  .info-btn:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(214,196,168,.8)}
+  .info-panel{
+    position:absolute;top:calc(100% + 10px);left:0;z-index:6;
+    width:min(430px,88vw);text-align:left;padding:16px 18px;border-radius:18px;
+    background:linear-gradient(155deg, rgba(255,255,255,.92), rgba(255,255,255,.84));
+    -webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);
+    border:1px solid rgba(92,36,56,.14);
+    box-shadow:0 24px 48px -20px rgba(92,36,56,.45), inset 0 1px 0 rgba(255,255,255,.85);
+  }
+  .info-panel h2{font-family:"Outfit",sans-serif;font-size:15px;font-weight:700;color:var(--wine)}
+  .info-panel ol{margin:8px 0 0 18px;font-size:13.5px;line-height:1.55;color:var(--ink)}
+  .info-panel li{margin:4px 0}
+  .info-panel .info-keys{margin-top:10px;font-size:12.5px;color:var(--muted);line-height:1.55}
+  button{font:inherit;cursor:pointer;touch-action:manipulation}
+  button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--wine);outline-offset:2px}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;border-radius:999px;min-height:50px;
+    padding:12px 24px;font-size:16px;font-weight:600;border:1px solid rgba(92,36,56,.16);
+    background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    color:var(--ink);transition:all .16s ease;
+    box-shadow:0 2px 0 rgba(214,196,168,.8), 0 14px 24px -16px rgba(92,36,56,.45);
+  }
+  .btn svg{width:19px;height:19px;flex:none}
+  .btn:hover{border-color:var(--wine);color:var(--wine)}
+  .btn:active{transform:translateY(2px);box-shadow:0 0 0 rgba(214,196,168,.8), 0 6px 12px -8px rgba(92,36,56,.4)}
+  .btn.primary{
+    background:linear-gradient(160deg,var(--wine),var(--wine-deep));border-color:rgba(255,255,255,.3);color:#fff;min-width:210px;min-height:54px;justify-content:center;font-size:17px;
+    box-shadow:0 3px 0 var(--wine-deep), 0 16px 26px -12px rgba(92,36,56,.6);
+  }
+  .btn.primary:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wine-deep), 0 8px 14px -8px rgba(92,36,56,.5)}
+  .btn.primary:hover{background:linear-gradient(160deg,var(--wine-deep),#3c1423);color:#fff}
+  .btn.primary:disabled{opacity:.55;cursor:wait}
+  .btn.utility{padding:10px 16px;font-size:14.5px;min-height:48px;gap:7px}
+  .btn.utility svg{width:17px;height:17px}
+  .btn.icon-btn{position:absolute;top:14px;right:14px;z-index:5;width:42px;height:42px;min-height:42px;padding:0;border-radius:14px;justify-content:center}
+  .btn.icon-btn svg{width:19px;height:19px}
+  .chip{
+    border:1px solid rgba(92,36,56,.16);background:rgba(255,255,255,.62);color:var(--ink);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    border-radius:999px;padding:9px 15px;font-size:14.5px;font-weight:600;min-height:44px;
+    transition:all .16s ease;box-shadow:0 2px 0 rgba(214,196,168,.8), 0 10px 18px -12px rgba(92,36,56,.35);
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  }
+  .chip:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(214,196,168,.8)}
+  .chip:hover{border-color:var(--wine);color:var(--wine)}
+  .stage-pill{
+    display:inline-flex;align-items:center;justify-content:center;min-width:150px;gap:7px;font-size:12.5px;font-weight:700;
+    letter-spacing:2.2px;text-transform:uppercase;color:var(--teal);
+    border:1px solid rgba(255,255,255,.75);border-radius:999px;padding:7px 14px;
+    background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    box-shadow:0 4px 12px -6px rgba(92,36,56,.25);
+  }
+  .stage-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--teal)}
   #pickedName{
-    font-size:clamp(44px,9.5vw,96px);font-weight:800;color:var(--wine);line-height:1.15;
-    min-height:1.2em;padding:8px 4px;word-break:break-word;
+    font-family:"Outfit",sans-serif;font-size:clamp(42px,8.5vw,88px);font-weight:800;color:var(--wine);
+    line-height:1.15;min-height:1.2em;padding:10px 4px 2px;word-break:break-word;letter-spacing:-.5px;
   }
-  #pickedName.idle{color:#cbbfae;font-weight:700}
+  #pickedName.idle{color:var(--muted);font-weight:700}
   @keyframes land{0%{transform:scale(.92)}55%{transform:scale(1.06)}100%{transform:scale(1)}}
   #pickedName.landed{animation:land .45s ease}
-  #progressLine{color:var(--muted);font-size:15px;min-height:1.3em}
-  .bar{height:10px;background:#f0e6d8;border-radius:99px;overflow:hidden;max-width:520px;margin:12px auto 0}
+  #progressLine{color:var(--muted);font-size:14.5px;min-height:1.35em}
+  .bar{height:10px;background:rgba(92,36,56,.10);border-radius:99px;overflow:hidden;width:100%;max-width:520px;margin:12px auto 0}
   .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .4s ease}
-  .actions{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
-  .actions button,.panel button{
-    font:inherit;cursor:pointer;border-radius:999px;border:2px solid var(--wine);
-    background:var(--card);color:var(--wine);font-weight:600;padding:10px 20px;font-size:15px;
-    min-height:44px;transition:all .15s ease;
+  .controls{display:flex;gap:10px;justify-content:center;align-items:center;margin-top:20px;flex-wrap:wrap}
+  .feedback{font-size:14px;color:var(--muted);text-align:center;margin-top:12px;height:21px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;margin-top:16px}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}}
+  .panel{
+    background:linear-gradient(155deg, rgba(255,255,255,.78), rgba(255,255,255,.52));
+    -webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);
+    border:1px solid rgba(255,255,255,.75);border-radius:var(--r-lg);
+    box-shadow:0 24px 60px -24px rgba(92,36,56,.35), inset 0 1px 0 rgba(255,255,255,.85);
+    padding:20px;text-align:left;
   }
-  .actions button:hover,.panel button:hover{background:var(--wine);color:#fff}
-  #pickBtn{background:var(--wine);color:#fff;font-size:19px;padding:14px 38px}
-  #pickBtn:hover{background:var(--wine-dark)}
-  #pickBtn:disabled{opacity:.55;cursor:wait}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;margin-top:18px}
-  @media (max-width:720px){.grid{grid-template-columns:1fr}}
-  .panel{background:var(--card);border:2px solid #eee0cd;border-radius:20px;padding:18px}
-  .panel h2{font-size:16px;color:var(--wine);margin-bottom:8px}
-  .panel p.hint{font-size:13px;color:var(--muted);margin-bottom:8px}
+  .panel h2{font-family:"Outfit",sans-serif;font-size:17px;font-weight:700;color:var(--wine)}
+  .panel p.hint{font-size:13px;color:var(--muted);margin:4px 0 10px;line-height:1.5}
   .panel textarea{
-    width:100%;min-height:170px;font:inherit;font-size:15px;padding:12px;border-radius:14px;
-    border:2px solid #ddd0c2;background:#fffdf9;color:var(--ink);resize:vertical;
+    width:100%;min-height:168px;font:inherit;font-size:15px;padding:12px;border-radius:var(--r-sm);
+    border:1px solid rgba(92,36,56,.18);background:rgba(255,255,255,.7);color:var(--ink);resize:vertical;
+    box-shadow:inset 0 2px 4px rgba(38,32,25,.05);
   }
   .panel textarea:focus{outline:none;border-color:var(--gold)}
   .panel .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
-  .panel select,.panel input[type=text]{
-    font:inherit;padding:10px 12px;border-radius:12px;border:2px solid #ddd0c2;background:#fff;color:var(--ink);
+  .panel input[type=text],.panel select{
+    font:inherit;padding:9px 12px;border-radius:var(--r-sm);border:1px solid rgba(92,36,56,.18);
+    background:rgba(255,255,255,.7);color:var(--ink);min-height:44px;box-shadow:inset 0 2px 4px rgba(38,32,25,.05);
   }
-  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
-  .chip{
-    background:#f4ead9;border:1.5px solid #e2d2b8;color:#6d5c49;border-radius:999px;
-    padding:6px 12px;font-size:14px;font-weight:600;
+  .panel input[type=text]:focus,.panel select:focus{outline:none;border-color:var(--gold)}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+  .name-chip{
+    background:rgba(255,255,255,.62);border:1px solid rgba(92,36,56,.14);color:var(--ink);
+    border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600;
   }
-  .chip.done{background:#e8f2ee;border-color:#bcd8cf;color:var(--teal);text-decoration:line-through}
-  .panel .empty{color:#c0b1a2;font-size:14px}
-  .options{display:flex;gap:18px;justify-content:center;margin-top:16px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
-  .options label{display:flex;gap:6px;align-items:center;cursor:pointer}
-  .options input{accent-color:var(--wine);width:17px;height:17px;cursor:pointer}
-  footer{margin-top:22px;text-align:center;font-size:13px;color:var(--muted)}
+  .name-chip.done{background:rgba(37,111,102,.12);border-color:rgba(37,111,102,.35);color:var(--teal);text-decoration:line-through}
+  .name-chip.done::before{content:"✓ "}
+  .panel .empty{color:var(--muted);font-size:14px}
+  .panel .feedback{margin-top:10px;text-align:left}
+  .options{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+  .options label{
+    display:inline-flex;gap:9px;align-items:center;cursor:pointer;font-weight:500;
+    background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    border:1px solid rgba(92,36,56,.13);border-radius:999px;padding:8px 15px 8px 10px;
+    box-shadow:0 8px 16px -12px rgba(92,36,56,.35);
+  }
+  .options input{
+    appearance:none;-webkit-appearance:none;width:38px;height:22px;border-radius:999px;flex:none;margin:0;
+    background:rgba(92,36,56,.25);position:relative;cursor:pointer;transition:background .18s ease;
+  }
+  .options input::after{
+    content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 3px rgba(38,32,25,.35);transition:transform .18s ease;
+  }
+  .options input:checked{background:var(--wine)}
+  .options input:checked::after{transform:translateX(16px)}
+  footer{margin-top:16px;color:var(--muted);display:flex;flex-direction:column;align-items:center;width:100%}
+  .foot-row{display:flex;gap:8px 22px;justify-content:center;align-items:center;flex-wrap:wrap}
+  .keys{display:flex;gap:8px 18px;justify-content:center;flex-wrap:wrap;font-size:12px}
+  .keys span{display:inline-flex;align-items:center;gap:6px}
+  kbd{
+    font-family:"Inter",sans-serif;font-size:11px;font-weight:700;color:var(--wine);
+    background:rgba(255,255,255,.65);border:1px solid rgba(92,36,56,.18);border-bottom-width:2px;
+    border-radius:6px;padding:2px 7px;
+  }
+  .foot-meta{margin-top:7px;font-size:12px;align-self:stretch;text-align:right;padding-right:2px}
   footer a{color:var(--wine);font-weight:600;text-decoration:none}
   footer a:hover{text-decoration:underline}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;transition:none!important}
+  }
 </style>
 </head>
 <body>
 <header>
-  <h1>Fair<span>Pick</span></h1>
-  <p>The random student picker that's actually fair — nobody twice until everyone has had a turn</p>
+  <div class="eyebrow">Teacher Tools</div>
+  <h1>Fair<span class="accent">Pick</span></h1>
+  <p>The random student picker that's actually fair — nobody gets picked twice until everyone has had a turn.</p>
 </header>
 
 <main>
-  <section class="stage">
-    <div id="roundLabel">Round 1</div>
+  <section class="card" aria-label="Student picker">
+    <div class="info-wrap">
+      <button class="info-btn" id="infoBtn" aria-label="How to use FairPick" aria-expanded="false" aria-controls="infoPanel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="M12 11v5.4"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor" stroke="none"/></svg>
+      </button>
+      <div class="info-panel" id="infoPanel" role="dialog" aria-label="How to use FairPick" hidden>
+        <h2>How to use</h2>
+        <ol>
+          <li>Paste your class list below — one name per line — or tap <strong>Try a sample class</strong>.</li>
+          <li>Press <strong>Pick a student</strong>. FairPick only chooses from students who haven't had a turn this round.</li>
+          <li>When everyone has been picked, a new round starts automatically.</li>
+          <li>Save named lists (Year 5A, Year 6B…) to reuse them next lesson — they're stored in this browser only.</li>
+        </ol>
+        <p class="info-keys">Shortcuts: <strong>Space</strong> pick a student · <strong>N</strong> new round · <strong>F</strong> fullscreen</p>
+      </div>
+    </div>
+    <button class="btn icon-btn" id="fullBtn" title="Fullscreen" aria-label="Fullscreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    </button>
+
+    <span class="stage-pill"><span class="dot"></span><span id="roundLabel">Round 1</span></span>
     <div id="pickedName" class="idle">Who's next?</div>
     <div id="progressLine">Add your class list below to begin</div>
     <div class="bar"><i id="barFill"></i></div>
-    <div class="actions">
-      <button id="pickBtn">🎲 Pick a student</button>
-      <button id="resetRoundBtn">↺ New round</button>
-      <button id="fullBtn">⛶ Fullscreen</button>
+    <div class="controls">
+      <button class="btn primary" id="pickBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="8.6" cy="8.6" r="1.5" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.5" fill="currentColor" stroke="none"/><circle cx="15.4" cy="8.6" r="1.5" fill="currentColor" stroke="none"/><circle cx="8.6" cy="15.4" r="1.5" fill="currentColor" stroke="none"/></svg>
+        <span>Pick a student</span>
+      </button>
+      <button class="btn utility" id="resetRoundBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        <span>New round</span>
+      </button>
     </div>
-    <div class="options">
-      <label><input type="checkbox" id="soundToggle" checked> Sound</label>
-      <label><input type="checkbox" id="animToggle" checked> Spinning animation</label>
-    </div>
+    <div id="feedback" class="feedback"></div>
+    <div class="sr-only" aria-live="polite" id="srStatus"></div>
   </section>
 
   <div class="grid">
     <section class="panel">
-      <h2>📋 Your class list</h2>
+      <h2>Your class list</h2>
       <p class="hint">One name per line. Saved automatically in this browser — no account needed.</p>
-      <textarea id="namesInput" placeholder="Amara&#10;Ben&#10;Chanya&#10;David&#10;…"></textarea>
+      <textarea id="namesInput" placeholder="Amara&#10;Ben&#10;Chanya&#10;David&#10;…" aria-label="Class list, one name per line"></textarea>
       <div class="row">
-        <input type="text" id="listName" placeholder="List name (e.g. Year 5A)" size="18">
-        <button id="saveListBtn">Save list</button>
-        <select id="savedLists"><option value="">Saved lists…</option></select>
-        <button id="loadListBtn">Load</button>
-        <button id="deleteListBtn">Delete</button>
+        <input type="text" id="listName" placeholder="List name (e.g. Year 5A)" size="18" aria-label="List name">
+        <button class="chip" id="saveListBtn">Save list</button>
+        <select id="savedLists" aria-label="Saved lists"><option value="">Saved lists…</option></select>
+        <button class="chip" id="loadListBtn">Load</button>
+        <button class="chip" id="deleteListBtn">Delete</button>
       </div>
       <div class="row">
-        <button id="sampleBtn">Try a sample class</button>
-        <button id="clearBtn">Clear</button>
+        <button class="chip" id="sampleBtn">Try a sample class</button>
+        <button class="chip" id="clearBtn">Clear</button>
       </div>
+      <div id="listFeedback" class="feedback"></div>
     </section>
 
     <section class="panel">
-      <h2>👀 Who's still waiting?</h2>
-      <p class="hint">Names fade once picked this round. When everyone has had a turn, a new round starts automatically.</p>
+      <h2>Who's still waiting?</h2>
+      <p class="hint">Names are ticked off once picked this round. When everyone has had a turn, a new round starts automatically.</p>
       <div class="chips" id="chips"><span class="empty">No names yet.</span></div>
     </section>
   </div>
 </main>
 
 <footer>
-  Made for teachers by <a href="https://rayjoshuaa-portfolio.pages.dev" target="_blank" rel="noopener">Ray Joshua</a> · Free forever · No sign-up · Works offline
+  <div class="foot-row">
+    <div class="options">
+      <label><input type="checkbox" id="soundToggle" checked> Sound</label>
+      <label><input type="checkbox" id="animToggle" checked> Spinning animation</label>
+    </div>
+    <div class="keys">
+      <span><kbd>Space</kbd> Pick</span>
+      <span><kbd>N</kbd> New round</span>
+      <span><kbd>F</kbd> Fullscreen</span>
+    </div>
+  </div>
+  <div class="foot-meta">© 2026 <a href="https://rayjoshuaa-portfolio.pages.dev" target="_blank" rel="noopener">Ray Joshua</a>. All rights reserved.</div>
 </footer>
 
 <script>
@@ -136,7 +293,9 @@
   var $ = function(id){ return document.getElementById(id); };
   var namesEl = $('namesInput'), chipsEl = $('chips'), pickedEl = $('pickedName');
   var roundEl = $('roundLabel'), progEl = $('progressLine'), barEl = $('barFill');
-  var pickBtn = $('pickBtn');
+  var pickBtn = $('pickBtn'), feedbackEl = $('feedback'), listFeedbackEl = $('listFeedback');
+  var srStatus = $('srStatus');
+  var BASE_TITLE = 'Teacher Tools: FairPick';
   var names = [], picked = [], round = 1, picking = false, audioCtx = null;
 
   function parseNames(){
@@ -161,23 +320,29 @@
       progEl.textContent = 'Add your class list below to begin';
       barEl.style.width = '0%';
       chipsEl.innerHTML = '<span class="empty">No names yet.</span>';
-      pickBtn.disabled = false;
       return;
     }
     progEl.textContent = picked.length + ' of ' + names.length + ' picked this round · ' + (names.length - picked.length) + ' still waiting';
-    barEl.style.width = (names.length ? (picked.length / names.length * 100) : 0) + '%';
+    barEl.style.width = (picked.length / names.length * 100) + '%';
     chipsEl.innerHTML = '';
     names.forEach(function(n){
       var c = document.createElement('span');
-      c.className = 'chip' + (picked.indexOf(n) !== -1 ? ' done' : '');
+      c.className = 'name-chip' + (picked.indexOf(n) !== -1 ? ' done' : '');
       c.textContent = n;
       chipsEl.appendChild(c);
     });
   }
-  function beep(freq, delay, dur){
-    if(!$('soundToggle').checked) return;
+  function warmAudio(){
     try{
       audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+      if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
+    }catch(e){}
+  }
+  function beep(freq, delay, dur){
+    if(!$('soundToggle').checked) return;
+    warmAudio();
+    if(!audioCtx) return;
+    try{
       var o = audioCtx.createOscillator(), g = audioCtx.createGain();
       o.type = 'sine'; o.frequency.value = freq;
       var t = audioCtx.currentTime + (delay||0);
@@ -188,19 +353,25 @@
       o.start(t); o.stop(t + (dur||0.18) + 0.05);
     }catch(e){}
   }
+  function reducedMotion(){
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
   function pick(){
     names = parseNames();
     if(picking) return;
     if(names.length === 0){
-      pickedEl.textContent = 'Add names first!';
-      pickedEl.classList.add('idle');
+      feedbackEl.textContent = 'Add your class list first — paste names in the panel below';
+      srStatus.textContent = 'Add your class list first';
       namesEl.focus();
       return;
     }
+    feedbackEl.textContent = '';
+    warmAudio();
     var pool = names.filter(function(n){ return picked.indexOf(n) === -1; });
     if(pool.length === 0){
       picked = []; round++;
       pool = names.slice();
+      srStatus.textContent = 'Everyone has had a turn. Round ' + round + ' started';
       saveDraft(); render();
     }
     var winner = pool[Math.floor(Math.random() * pool.length)];
@@ -212,9 +383,11 @@
       pickedEl.classList.add('landed');
       beep(659.25, 0, 0.25); beep(880, 0.12, 0.35);
       picking = false; pickBtn.disabled = false;
+      document.title = 'FairPick | ' + winner;
       saveDraft(); render();
+      srStatus.textContent = 'Picked: ' + winner + ' — ' + picked.length + ' of ' + names.length + ' picked this round';
     }
-    if($('animToggle').checked && pool.length > 1){
+    if($('animToggle').checked && !reducedMotion() && pool.length > 1){
       var steps = 0, maxSteps = 16 + Math.floor(Math.random()*8);
       var iv = setInterval(function(){
         var r = pool[Math.floor(Math.random()*pool.length)];
@@ -227,27 +400,31 @@
       setTimeout(land, 60);
     }
   }
-  pickBtn.addEventListener('click', pick);
-  $('resetRoundBtn').addEventListener('click', function(){
+  function newRound(){
     picked = []; round = 1;
-    pickedEl.textContent = "Who's next?"; pickedEl.classList.add('idle');
+    pickedEl.textContent = "Who's next?"; pickedEl.classList.add('idle'); pickedEl.classList.remove('landed');
+    document.title = BASE_TITLE;
+    feedbackEl.textContent = '';
     saveDraft(); render();
-  });
+    srStatus.textContent = 'New round started';
+  }
+  pickBtn.addEventListener('click', pick);
+  $('resetRoundBtn').addEventListener('click', newRound);
   $('fullBtn').addEventListener('click', function(){
     if(document.fullscreenElement) document.exitFullscreen();
     else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
   });
   namesEl.addEventListener('input', function(){ saveDraft(); render(); });
   $('clearBtn').addEventListener('click', function(){
-    namesEl.value = ''; picked = []; round = 1;
-    pickedEl.textContent = "Who's next?"; pickedEl.classList.add('idle');
-    saveDraft(); render();
+    namesEl.value = '';
+    newRound();
+    listFeedbackEl.textContent = 'List cleared';
   });
   $('sampleBtn').addEventListener('click', function(){
     namesEl.value = ['Amara','Ben','Chanya','David','Emma','Felix','Grace','Hugo','Ink','Jay','Kanya','Leo','Mali','Nina','Oscar','Ploy'].join('\n');
-    picked = []; round = 1;
-    pickedEl.textContent = "Who's next?"; pickedEl.classList.add('idle');
-    saveDraft(); render();
+    newRound();
+    listFeedbackEl.textContent = 'Sample class loaded — 16 names';
+    srStatus.textContent = 'Sample class loaded, 16 names';
   });
   function refreshSaved(){
     var sel = $('savedLists');
@@ -263,8 +440,15 @@
   }
   $('saveListBtn').addEventListener('click', function(){
     var name = $('listName').value.trim();
-    if(!name){ $('listName').focus(); return; }
-    if(parseNames().length === 0){ namesEl.focus(); return; }
+    if(!name){
+      listFeedbackEl.textContent = 'Give the list a name first, then press Save list';
+      srStatus.textContent = 'Give the list a name first';
+      $('listName').focus(); return;
+    }
+    if(parseNames().length === 0){
+      listFeedbackEl.textContent = 'Add some names first, then save the list';
+      namesEl.focus(); return;
+    }
     try{
       var all = JSON.parse(localStorage.getItem('fairpick_lists') || '{}');
       all[name] = namesEl.value;
@@ -272,31 +456,68 @@
     }catch(e){}
     refreshSaved();
     $('savedLists').value = name;
+    listFeedbackEl.textContent = 'Saved “' + name + '” — ' + parseNames().length + ' names';
+    srStatus.textContent = 'List saved: ' + name;
   });
   $('loadListBtn').addEventListener('click', function(){
     var name = $('savedLists').value;
-    if(!name) return;
+    if(!name){
+      listFeedbackEl.textContent = 'Choose a saved list first';
+      $('savedLists').focus(); return;
+    }
     try{
       var all = JSON.parse(localStorage.getItem('fairpick_lists') || '{}');
       if(all[name] != null){
         namesEl.value = all[name];
         $('listName').value = name;
-        picked = []; round = 1;
-        pickedEl.textContent = "Who's next?"; pickedEl.classList.add('idle');
-        saveDraft(); render();
+        newRound();
+        listFeedbackEl.textContent = 'Loaded “' + name + '” — ' + parseNames().length + ' names';
+        srStatus.textContent = 'List loaded: ' + name;
       }
     }catch(e){}
   });
   $('deleteListBtn').addEventListener('click', function(){
     var name = $('savedLists').value;
-    if(!name) return;
+    if(!name){
+      listFeedbackEl.textContent = 'Choose a saved list first';
+      $('savedLists').focus(); return;
+    }
     try{
       var all = JSON.parse(localStorage.getItem('fairpick_lists') || '{}');
       delete all[name];
       localStorage.setItem('fairpick_lists', JSON.stringify(all));
     }catch(e){}
     refreshSaved();
+    listFeedbackEl.textContent = 'Deleted “' + name + '”';
+    srStatus.textContent = 'List deleted: ' + name;
   });
+  document.addEventListener('keydown', function(e){
+    var t = e.target;
+    if(t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return;
+    if(e.code === 'Space'){
+      if(t.closest && t.closest('button')) return;
+      e.preventDefault(); pick();
+    }
+    else if(e.key === 'n' || e.key === 'N'){ newRound(); }
+    else if(e.key === 'f' || e.key === 'F'){ $('fullBtn').click(); }
+  });
+  var infoBtn = $('infoBtn'), infoPanel = $('infoPanel');
+  function closeInfo(){ infoPanel.hidden = true; infoBtn.setAttribute('aria-expanded', 'false'); }
+  infoBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    var willOpen = infoPanel.hidden;
+    infoPanel.hidden = !willOpen;
+    infoBtn.setAttribute('aria-expanded', String(willOpen));
+  });
+  document.addEventListener('click', function(e){
+    if(!infoPanel.hidden && !infoPanel.contains(e.target)){ closeInfo(); }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ closeInfo(); }
+  });
+  if(!document.documentElement.requestFullscreen){
+    $('fullBtn').style.display = 'none';
+  }
   try{
     var draft = localStorage.getItem('fairpick_draft');
     if(draft) namesEl.value = draft;
