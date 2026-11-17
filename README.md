@@ -14,6 +14,7 @@ Every teacher knows the moment: the "random" picker lands on the same confident 
 - **Big, projector-friendly reveal** — a quick name-spin animation that lands with a cheerful chime
 - **Progress at a glance** — "7 of 24 picked · 17 still waiting" with a progress bar
 - **No sign-up, no ads, works offline** — a single HTML file; your lists never leave your computer
+- **No repeats** - nobody is picked twice until everyone has had a turn in the round.
 
 ## How teachers use it
 
