@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.0.2 — class list box fills its space
+
+- The class list textarea now stretches to fill the panel height
+  (the shadcn Textarea's content-sizing was keeping it collapsed to
+  one line; it is switched to fixed sizing in the app).
+- No behaviour changes.
+
 ## v3.0.1 — wider layout, congestion fixed
 
 - The app now uses 90% of the window width instead of the old
