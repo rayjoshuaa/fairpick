@@ -1,35 +1,142 @@
-# FairPick
+# FairPick — v3.0.0 (shadcn/ui rebuild)
 
 **The random student picker that's actually fair.**
 
-Every teacher knows the moment: the "random" picker lands on the same confident kid for the third time while the quiet ones never get a turn. FairPick fixes that — it remembers who has been picked, so **nobody gets picked twice until everyone has had a turn**. Then a new round begins.
+Every teacher knows the moment: the "random" picker lands on the same
+confident kid for the third time while the quiet ones never get a turn.
+FairPick fixes that — it remembers who has been picked, so **nobody gets
+picked twice until everyone has had a turn**. Then a new round begins.
 
-🔗 **Live:** https://fair-pick.pages.dev
+No sign-up, no ads; class lists live in the browser (`localStorage`) and
+the app builds to a fully static site.
 
-## Why it's different
+This is the **shadcn/ui rebuild** of FairPick (v3.0.0), following the
+design of ClassTimer+ v2.1.5, the first app in the Teacher Tools family —
+Ray's settled design reference. The previous vanilla build (v2.0.0) still
+lives in `../fairpick/` and is not touched by this project. Behaviour and
+stored data are unchanged: the same fairness engine and the same
+`localStorage` keys (`fairpick_draft`, `fairpick_state`, `fairpick_lists`)
+with the same shapes, so lists and state saved by v2.0.0 carry over
+untouched.
 
-- **Fairness engine** — picks only from students who haven't had a turn this round; rounds tracked automatically
-- **See who's still waiting** — the class board shows every name, ticked off as each student is picked
-- **Save multiple class lists** — Year 5A, Year 6B, your club… named lists saved in the browser, no account
-- **Big, projector-friendly reveal** — a quick name-spin animation that lands with a cheerful chime
-- **Progress at a glance** — "7 of 24 picked · 17 still waiting" with a progress bar
-- **No sign-up, no ads, works offline** — a single HTML file; your lists never leave your computer
-- **No repeats** - nobody is picked twice until everyone has had a turn in the round.
+**Icon:** the black & white Teacher Tools icon set lives in `../icons-bw/`.
+FairPick uses the `shuffle` icon as `public/icon.svg` — its favicon only;
+there is no brand mark on the page (same rule as ClassTimer+).
 
-## How teachers use it
+## Stack
 
-1. Paste your class list (one name per line) — or tap *Try a sample class*
-2. Save it under a name like "Year 5A" for next lesson
-3. Press **Pick a student** whenever you need a volunteer, a reader, or a helper — it's always somebody who hasn't gone yet
+- React 19 + Vite 8 + TypeScript
+- Tailwind CSS **v4** (via `@tailwindcss/vite`)
+- shadcn/ui — `radix-nova` style, `neutral` base colour, CSS variables,
+  `lucide` icons (see `components.json`)
+- lucide-react icons
 
-Great for cold-calling fairly, choosing helpers, reading order, presentations, and classroom jobs.
+The project was copied from the ClassTimer+ shadcn project (the family's
+template) and extended the standard shadcn way:
 
-Keyboard shortcuts: **Space** pick a student · **N** new round · **F** fullscreen.
+```bash
+npx shadcn@latest add textarea select scroll-area -y
+```
 
-## Tech
+Note: as with ClassTimer+, the shadcn CLI wrote the generated files into
+a literal `@/` folder in the project root instead of resolving the alias
+to `src/`. The generated component files were moved **verbatim,
+unmodified** into `src/components/ui/`. No component source was
+hand-written or altered.
 
-One self-contained `index.html` (HTML + CSS + vanilla JS + Web Audio API, `localStorage` for lists). No build step, no dependencies. Hosted on Cloudflare Pages, deployed automatically from this repository.
+## shadcn/ui components used
 
-## Part of a teacher-tools family
+Every UI element in the app is one of these official components from
+`src/components/ui/`:
 
-Built by [Ray Joshua](https://rayjoshuaa-portfolio.pages.dev) — ICT & Robotics Educator, Bangkok. Sibling tools: ClassTimer+, GroupGrid, CalmMeter, TeamPoints and more.
+- **Button** — Pick a student, New round, Save list, Load, Delete,
+  Try a sample class, Clear, fullscreen, how-to trigger, footer
+  portfolio link (`asChild`)
+- **Card** (`CardHeader`, `CardTitle`, `CardDescription`, `CardContent`,
+  `CardFooter`) — the picker panel and its sections
+- **Badge** — "Teacher Tools" eyebrow, the Round indicator, and the
+  name chips (picked names use the `outline` variant with a tick icon
+  and strikethrough; waiting names use `secondary`)
+- **Textarea** — the class list, one name per line
+- **Input** — the list name field
+- **Select** (`SelectTrigger`, `SelectValue`, `SelectContent`,
+  `SelectItem`) — the saved-lists chooser
+- **Label** — Your class list, Who's still waiting?, and both switches
+- **Switch** — Sound (default on), Spinning animation (default on)
+- **Dialog** (`DialogTrigger`, `DialogContent`, `DialogHeader`,
+  `DialogTitle`, `DialogDescription`) — How to use
+- **Tooltip** (`TooltipProvider`, `Tooltip`, `TooltipTrigger`,
+  `TooltipContent`) — fullscreen button tooltip
+- **Kbd** — keyboard shortcuts in the footer and the How to use dialog
+- **Separator** — section dividers inside the card
+- **Progress** — how much of the round is done
+  ("7 of 24 picked · 17 still waiting")
+- **ScrollArea** — installed with the set; the chips area itself uses a
+  plain internal scroll region (`min-h-0 overflow-y-auto`), the pattern
+  the ClassTimer+ layout uses, so the page itself never scrolls
+
+Layout is Tailwind utility classes only, mirroring ClassTimer+ v2.1.5:
+one fixed screen (`h-svh`, no page scrolling), the card fills the
+viewport height, section titles are bold like titles, buttons whose
+labels could change have fixed widths, feedback text sits in
+reserved-height lines so nothing ever shifts, and long content scrolls
+inside its own area. There is no custom colour palette and no
+glassmorphism: `src/index.css` is the file generated by `shadcn init`
+(shadcn theme tokens, Geist font as shipped by the preset), plus the
+small `land` keyframe animation the vanilla app used for the picked
+name's landing pop (disabled under `prefers-reduced-motion`).
+
+## Features (carried over from v2.0.0)
+
+- **Fairness engine** — picks only from students who haven't had a turn
+  this round; when everyone has been picked, a new round starts
+  automatically; the New round button resets the round counter to 1
+- **Name-spin reveal** — names shuffle for about a second and land with
+  the two-note chime (659.25 / 880 Hz), skipped under
+  `prefers-reduced-motion` or when the Spinning animation switch is off;
+  spin ticks and the chime honour the Sound switch; the AudioContext is
+  created/resumed inside the Pick gesture
+- **See who's still waiting** — every name as a chip, ticked off with a
+  tick and strikethrough once picked (never colour alone)
+- **Class list editor** — one name per line, trimmed, blanks dropped,
+  duplicates removed case-insensitively; the draft is saved automatically
+- **Named saved lists** — save, load and delete lists (Year 5A, Year 6B…)
+  stored in this browser only; Try a sample class loads 16 names
+- **Feedback instead of silence** — picking with no names, saving
+  without a list name, or loading/deleting with nothing chosen explains
+  itself in a reserved feedback line and focuses the field that needs
+  attention
+- **Keyboard** — `Space` pick a student (not while typing in a field,
+  and never double-firing from a focused button), `N` new round,
+  `F` fullscreen
+- **Tab title** — "Teacher Tools: FairPick"; after a pick,
+  "FairPick | \<name\>"
+- Screen-reader `aria-live` announcements on picks, round changes and
+  list actions only (never during the spin)
+- Fullscreen button (hidden when the browser has no fullscreen API) and
+  a How to use dialog; footer "© 2026 Ray Joshua. All rights reserved."
+  linking to the portfolio
+
+## Run and build
+
+```bash
+npm install
+npm run dev      # local development
+npm run build    # type-check (tsc -b) + production build into dist/
+npm run preview  # preview the production build
+```
+
+## Cloudflare Pages settings (not deployed yet)
+
+- Framework preset: **Vite**
+- Build command: `npm run build`
+- Build output directory: `dist`
+- No environment variables or server functions are needed — the output is
+  fully static.
+- Note: v2.0.0 was a single static file served from the repository root;
+  when this rebuild is deployed to the existing `fair-pick` Pages
+  project, its build settings must change to the ones above.
+
+## Version
+
+v3.0.0 — see `CHANGELOG.md`.
