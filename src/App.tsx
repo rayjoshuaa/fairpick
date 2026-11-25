@@ -443,7 +443,7 @@ export default function App() {
   return (
     <TooltipProvider>
       <div className="flex h-svh flex-col items-center overflow-hidden bg-background px-4 py-3 text-foreground">
-        <header className="flex w-full max-w-4xl shrink-0 flex-col items-center gap-1 text-center">
+        <header className="flex w-[90%] shrink-0 flex-col items-center gap-1 text-center">
           <Badge variant="secondary">Teacher Tools</Badge>
           <h1 className="text-2xl font-bold tracking-tight">FairPick</h1>
           <p className="max-w-xl text-xs text-muted-foreground [@media(max-height:720px)]:hidden">
@@ -453,7 +453,7 @@ export default function App() {
         </header>
 
         <main className="flex w-full min-h-0 flex-1 justify-center pt-3">
-          <Card className="flex h-full w-full max-w-4xl flex-col gap-2 py-3">
+          <Card className="flex h-full w-[90%] flex-col gap-2 py-3">
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex flex-col gap-1.5">
@@ -542,16 +542,16 @@ export default function App() {
                 Round {round}
               </Badge>
 
-              <div className="flex h-[clamp(4rem,14vmin,8.5rem)] w-full shrink-0 items-center justify-center px-2">
+              <div className="flex h-[clamp(3.25rem,10vmin,6rem)] w-full shrink-0 items-center justify-center px-2">
                 {displayName ? (
                   <span
                     key={landedKey}
-                    className="animate-land max-w-full text-center text-[clamp(2.5rem,9vmin,5.5rem)] leading-[1.05] font-bold tracking-tight break-words"
+                    className="animate-land max-w-full text-center text-[clamp(2rem,7.5vmin,4.25rem)] leading-[1.05] font-bold tracking-tight break-words"
                   >
                     {displayName}
                   </span>
                 ) : (
-                  <span className="max-w-full text-center text-[clamp(2.5rem,9vmin,5.5rem)] leading-[1.05] font-bold tracking-tight break-words text-muted-foreground">
+                  <span className="max-w-full text-center text-[clamp(2rem,7.5vmin,4.25rem)] leading-[1.05] font-bold tracking-tight break-words text-muted-foreground">
                     Who&apos;s next?
                   </span>
                 )}
@@ -600,12 +600,12 @@ export default function App() {
               <div className="grid w-full min-h-0 flex-1 grid-cols-1 gap-4 pt-2 md:grid-cols-2">
                 <section
                   aria-label="Your class list"
-                  className="flex min-h-0 flex-col gap-2 rounded-xl border p-4 text-left"
+                  className="flex min-h-0 flex-col gap-2 rounded-xl border p-3 text-left"
                 >
                   <Label className="text-base font-semibold text-foreground">
                     Your class list
                   </Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground [@media(max-height:760px)]:hidden">
                     One name per line. Saved automatically in this browser —
                     no account needed.
                   </p>
@@ -688,12 +688,12 @@ export default function App() {
 
                 <section
                   aria-label="Who's still waiting?"
-                  className="flex min-h-0 flex-col gap-2 rounded-xl border p-4 text-left"
+                  className="flex min-h-0 flex-col gap-2 rounded-xl border p-3 text-left"
                 >
                   <Label className="text-base font-semibold text-foreground">
                     Who&apos;s still waiting?
                   </Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground [@media(max-height:760px)]:hidden">
                     Names are ticked off once picked this round. When everyone
                     has had a turn, a new round starts automatically.
                   </p>
