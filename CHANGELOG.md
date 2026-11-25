@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.0.1 — wider layout, congestion fixed
+
+- The app now uses 90% of the window width instead of the old
+  max-w-4xl cap, so the two panels have room to breathe.
+- Smaller picked-name display box, tighter panel padding, and the
+  panel descriptions hide on short screens — the class-list panel no
+  longer squeezes the textarea or spills over the switches row.
+- No behaviour changes.
+
 ## v3.0.0 — shadcn/ui rebuild (ClassTimer+ design)
 
 - Full rebuild from the single-file vanilla app to React + Vite +
