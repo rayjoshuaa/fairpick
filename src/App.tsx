@@ -542,7 +542,7 @@ export default function App() {
                 Round {round}
               </Badge>
 
-              <div className="flex h-[clamp(3.25rem,10vmin,6rem)] w-full shrink-0 items-center justify-center px-2">
+              <div className="flex h-[clamp(2.75rem,9vmin,5.5rem)] w-full shrink-0 items-center justify-center px-2">
                 {displayName ? (
                   <span
                     key={landedKey}
@@ -567,7 +567,7 @@ export default function App() {
                 aria-label="Students picked this round"
               />
 
-              <div className="flex shrink-0 flex-wrap items-center justify-center gap-3 pt-2">
+              <div className="flex shrink-0 flex-wrap items-center justify-center gap-3 pt-1">
                 <Button
                   size="lg"
                   className="w-56"
@@ -597,10 +597,10 @@ export default function App() {
 
               <Separator className="shrink-0" />
 
-              <div className="grid w-full min-h-0 flex-1 grid-cols-1 gap-4 pt-2 md:grid-cols-2">
+              <div className="grid w-full min-h-0 flex-1 grid-cols-1 gap-4 pt-1 md:grid-cols-2">
                 <section
                   aria-label="Your class list"
-                  className="flex min-h-0 flex-col gap-2 rounded-xl border p-3 text-left"
+                  className="flex min-h-0 flex-col gap-1.5 rounded-xl border p-3 text-left"
                 >
                   <Label className="text-base font-semibold text-foreground">
                     Your class list
@@ -624,11 +624,11 @@ export default function App() {
                       onChange={(e) => setListName(e.target.value)}
                       placeholder="List name (e.g. Year 5A)"
                       aria-label="List name"
-                      className="min-w-36 flex-1"
+                      className="h-10 min-w-36 flex-1"
                     />
                     <Button
                       variant="secondary"
-                      className="w-24"
+                      className="h-10 w-24"
                       onClick={saveList}
                     >
                       Save list
@@ -642,7 +642,7 @@ export default function App() {
                       <SelectTrigger
                         id="saved-lists-select"
                         aria-label="Saved lists"
-                        className="min-w-36 flex-1"
+                        className="h-10 min-w-36 flex-1"
                       >
                         <SelectValue placeholder="Saved lists…" />
                       </SelectTrigger>
@@ -656,39 +656,39 @@ export default function App() {
                     </Select>
                     <Button
                       variant="outline"
-                      className="w-20"
+                      className="h-10 w-20"
                       onClick={loadList}
                     >
                       Load
                     </Button>
                     <Button
                       variant="outline"
-                      className="w-20"
+                      className="h-10 w-20"
                       onClick={deleteList}
                     >
                       Delete
                     </Button>
                   </div>
                   <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    <Button variant="outline" onClick={loadSample}>
+                    <Button variant="outline" className="h-10" onClick={loadSample}>
                       Try a sample class
                     </Button>
                     <Button
                       variant="outline"
-                      className="w-20"
+                      className="h-10 w-20"
                       onClick={clearList}
                     >
                       Clear
                     </Button>
+                    <p className="flex h-5 min-w-24 flex-1 items-center overflow-hidden text-sm whitespace-nowrap text-muted-foreground">
+                      {listFeedback || "\u00A0"}
+                    </p>
                   </div>
-                  <p className="flex h-5 shrink-0 items-center overflow-hidden text-sm whitespace-nowrap text-muted-foreground">
-                    {listFeedback || "\u00A0"}
-                  </p>
                 </section>
 
                 <section
                   aria-label="Who's still waiting?"
-                  className="flex min-h-0 flex-col gap-2 rounded-xl border p-3 text-left"
+                  className="flex min-h-0 flex-col gap-1.5 rounded-xl border p-3 text-left"
                 >
                   <Label className="text-base font-semibold text-foreground">
                     Who&apos;s still waiting?
