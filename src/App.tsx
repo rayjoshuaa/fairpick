@@ -615,7 +615,7 @@ export default function App() {
                     onChange={(e) => handleDraftChange(e.target.value)}
                     placeholder={"Amara\nBen\nChanya\nDavid\n…"}
                     aria-label="Class list, one name per line"
-                    className="min-h-0 flex-1 resize-none"
+                    className="min-h-0 flex-1 resize-none field-sizing-fixed"
                   />
                   <div className="flex shrink-0 flex-wrap items-center gap-2">
                     <Input
