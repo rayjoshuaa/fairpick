@@ -1,4 +1,4 @@
-# FairPick — v3.0.2 (shadcn/ui rebuild)
+# FairPick — v3.0.3 (shadcn/ui rebuild)
 
 **The random student picker that's actually fair.**
 
@@ -10,7 +10,7 @@ picked twice until everyone has had a turn**. Then a new round begins.
 No sign-up, no ads; class lists live in the browser (`localStorage`) and
 the app builds to a fully static site.
 
-This is the **shadcn/ui rebuild** of FairPick (v3.0.2), following the
+This is the **shadcn/ui rebuild** of FairPick (v3.0.3), following the
 design of ClassTimer+ v2.1.5, the first app in the Teacher Tools family —
 Ray's settled design reference. The previous vanilla build (v2.0.0) still
 lives in `../fairpick/` and is not touched by this project. Behaviour and
@@ -139,4 +139,4 @@ npm run preview  # preview the production build
 
 ## Version
 
-v3.0.2 — see `CHANGELOG.md`.
+v3.0.3 — see `CHANGELOG.md`.

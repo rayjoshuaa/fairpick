@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.0.3 — class list panel fixed
+
+- The sample/clear buttons and the panel feedback now share one
+  row, freeing a full row of height for the class list box.
+- Panel fields and buttons are taller (h-10), panel gaps tighter,
+  and the picked-name box is slightly shorter — the class list is
+  properly editable again on shorter screens.
+- No behaviour changes.
+
 ## v3.0.2 — class list box fills its space
 
 - The class list textarea now stretches to fill the panel height
