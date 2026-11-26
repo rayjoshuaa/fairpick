@@ -76,28 +76,11 @@ function parseNames(text: string): string[] {
   return out
 }
 
-// fairpick_lists shape: a plain object mapping list name -> raw list text.
-function readLists(): Record<string, unknown> {
-  try {
-    const parsed: unknown = JSON.parse(
-      localStorage.getItem("fairpick_lists") || "{}"
-    )
-    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-      return parsed as Record<string, unknown>
-    }
-  } catch {
-    /* storage unavailable or corrupt — treat as no saved lists */
-  }
-  return {}
-}
-
-function writeLists(all: Record<string, unknown>) {
-  try {
-    localStorage.setItem("fairpick_lists", JSON.stringify(all))
-  } catch {
-    /* storage unavailable */
-  }
-}
+// Saved lists are session-only since v3.1.0: they live in React state
+// (see the `lists` state below) and are never written to localStorage,
+// so a page reload wipes them. Older versions stored them under the
+// fairpick_lists key; the app removes that key on load (see the effect
+// in App) so previously saved lists disappear too.
 
 // fairpick_draft shape: the raw textarea text (a plain string, not JSON).
 function initialDraft(): string {
@@ -150,9 +133,8 @@ export default function App() {
   const [srStatus, setSrStatus] = useState("")
   const [listName, setListName] = useState("")
   const [selectedList, setSelectedList] = useState("")
-  const [savedLists, setSavedLists] = useState<string[]>(() =>
-    Object.keys(readLists())
-  )
+  // Session-only saved lists: list name -> raw list text, in memory only.
+  const [lists, setLists] = useState<Record<string, string>>({})
   const [soundOn, setSoundOn] = useState(true)
   const [animOn, setAnimOn] = useState(true)
 
@@ -165,12 +147,23 @@ export default function App() {
   const listNameRef = useRef<HTMLInputElement>(null)
 
   const names = useMemo(() => parseNames(draft), [draft])
+  const savedLists = useMemo(() => Object.keys(lists), [lists])
   // The vanilla render() filters picked down to names still on the list.
   const picked = useMemo(
     () => pickedRaw.filter((p) => names.includes(p)),
     [pickedRaw, names]
   )
   const pickedCount = picked.length
+
+  // Clean up lists saved by older versions: they were stored permanently
+  // in localStorage under fairpick_lists, which is no longer used.
+  useEffect(() => {
+    try {
+      localStorage.removeItem("fairpick_lists")
+    } catch {
+      /* storage unavailable */
+    }
+  }, [])
 
   // Persist draft + state exactly like the vanilla saveDraft(): the draft
   // as a raw string, the state as JSON { picked, round }. Skipped on first
@@ -254,7 +247,7 @@ export default function App() {
     const currentNames = parseNames(draft)
     if (pickingRef.current) return
     if (currentNames.length === 0) {
-      setFeedback("Add your class list first — paste names in the panel below")
+      setFeedback("Add your class list first — paste names in the class list panel")
       setSrStatus("Add your class list first")
       textareaRef.current?.focus()
       return
@@ -356,10 +349,6 @@ export default function App() {
     setPickedRaw((prev) => prev.filter((p) => newNames.includes(p)))
   }
 
-  const refreshSaved = () => {
-    setSavedLists(Object.keys(readLists()))
-  }
-
   const focusSavedLists = () => {
     document.getElementById("saved-lists-select")?.focus()
   }
@@ -377,12 +366,9 @@ export default function App() {
       textareaRef.current?.focus()
       return
     }
-    const all = readLists()
-    all[name] = draft
-    writeLists(all)
-    refreshSaved()
+    setLists((prev) => ({ ...prev, [name]: draft }))
     setSelectedList(name)
-    setListFeedback(`Saved “${name}” — ${names.length} names`)
+    setListFeedback("List saved — kept only until you reload this page.")
     setSrStatus(`List saved: ${name}`)
   }
 
@@ -393,9 +379,8 @@ export default function App() {
       focusSavedLists()
       return
     }
-    const all = readLists()
-    if (all[name] != null) {
-      const text = String(all[name])
+    const text = lists[name]
+    if (text != null) {
       setDraft(text)
       setListName(name)
       newRound()
@@ -411,10 +396,11 @@ export default function App() {
       focusSavedLists()
       return
     }
-    const all = readLists()
-    delete all[name]
-    writeLists(all)
-    refreshSaved()
+    setLists((prev) => {
+      const next = { ...prev }
+      delete next[name]
+      return next
+    })
     setSelectedList("")
     setListFeedback(`Deleted “${name}”`)
     setSrStatus(`List deleted: ${name}`)
@@ -435,14 +421,14 @@ export default function App() {
 
   const progressText =
     names.length === 0
-      ? "Add your class list below to begin"
+      ? "Add your class list to begin"
       : `${pickedCount} of ${names.length} picked this round · ${names.length - pickedCount} still waiting`
   const progressValue =
     names.length === 0 ? 0 : (pickedCount / names.length) * 100
 
   return (
     <TooltipProvider>
-      <div className="flex h-svh flex-col items-center overflow-hidden bg-background px-4 py-3 text-foreground">
+      <div className="flex min-h-svh flex-col items-center bg-background px-4 py-3 text-foreground">
         <header className="flex w-[90%] shrink-0 flex-col items-center gap-1 text-center">
           <Badge variant="secondary">Teacher Tools</Badge>
           <h1 className="text-2xl font-bold tracking-tight">FairPick</h1>
@@ -452,8 +438,8 @@ export default function App() {
           </p>
         </header>
 
-        <main className="flex w-full min-h-0 flex-1 justify-center pt-3">
-          <Card className="flex h-full w-[90%] flex-col gap-2 py-3">
+        <main className="flex w-full flex-1 justify-center pt-3">
+          <Card className="flex w-[90%] flex-1 flex-col gap-2 py-3">
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex flex-col gap-1.5">
@@ -495,9 +481,10 @@ export default function App() {
                           automatically.
                         </li>
                         <li>
-                          Save named lists (Year 5A, Year 6B…) to reuse them
-                          next lesson — they&apos;re stored in this browser
-                          only.
+                          Save named lists (Year 5A, Year 6B…) to switch
+                          between classes during a visit — saved lists are
+                          kept only until you reload this page. The list you
+                          type is still saved automatically in this browser.
                         </li>
                       </ol>
                       <Separator />
@@ -534,161 +521,74 @@ export default function App() {
               </div>
             </CardHeader>
 
-            <CardContent className="flex min-h-0 flex-1 flex-col items-center gap-1 overflow-hidden">
-              <Badge
-                variant="secondary"
-                className="min-w-24 shrink-0 justify-center"
-              >
-                Round {round}
-              </Badge>
+            <CardContent className="grid w-full min-h-0 flex-1 grid-cols-1 gap-4 pt-1 md:grid-cols-[minmax(340px,5fr)_7fr]">
+              {/* Picker column — first on mobile, right column on md+ */}
+              <div className="flex min-h-0 flex-col items-center gap-1 md:col-start-2">
+                <Badge
+                  variant="secondary"
+                  className="min-w-24 shrink-0 justify-center"
+                >
+                  Round {round}
+                </Badge>
 
-              <div className="flex h-[clamp(2.75rem,9vmin,5.5rem)] w-full shrink-0 items-center justify-center px-2">
-                {displayName ? (
-                  <span
-                    key={landedKey}
-                    className="animate-land max-w-full text-center text-[clamp(2rem,7.5vmin,4.25rem)] leading-[1.05] font-bold tracking-tight break-words"
+                <div className="flex h-[clamp(2.75rem,9vmin,5.5rem)] w-full shrink-0 items-center justify-center px-2">
+                  {displayName ? (
+                    <span
+                      key={landedKey}
+                      className="animate-land max-w-full text-center text-[clamp(2rem,7.5vmin,4.25rem)] leading-[1.05] font-bold tracking-tight break-words"
+                    >
+                      {displayName}
+                    </span>
+                  ) : (
+                    <span className="max-w-full text-center text-[clamp(2rem,7.5vmin,4.25rem)] leading-[1.05] font-bold tracking-tight break-words text-muted-foreground">
+                      Who&apos;s next?
+                    </span>
+                  )}
+                </div>
+
+                <p className="flex h-5 w-full shrink-0 items-center justify-center overflow-hidden text-center text-sm whitespace-nowrap text-muted-foreground">
+                  {progressText}
+                </p>
+
+                <Progress
+                  value={progressValue}
+                  className="h-3 w-full max-w-xl shrink-0"
+                  aria-label="Students picked this round"
+                />
+
+                <div className="flex shrink-0 flex-wrap items-center justify-center gap-3 pt-1">
+                  <Button
+                    size="lg"
+                    className="w-56"
+                    onClick={pick}
+                    disabled={picking}
                   >
-                    {displayName}
-                  </span>
-                ) : (
-                  <span className="max-w-full text-center text-[clamp(2rem,7.5vmin,4.25rem)] leading-[1.05] font-bold tracking-tight break-words text-muted-foreground">
-                    Who&apos;s next?
-                  </span>
-                )}
-              </div>
+                    <Dices />
+                    Pick a student
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-36"
+                    onClick={newRound}
+                  >
+                    <RotateCcw />
+                    New round
+                  </Button>
+                </div>
 
-              <p className="flex h-5 w-full shrink-0 items-center justify-center overflow-hidden text-center text-sm whitespace-nowrap text-muted-foreground">
-                {progressText}
-              </p>
+                <p className="flex h-5 w-full shrink-0 items-center justify-center overflow-hidden text-center text-sm whitespace-nowrap text-muted-foreground">
+                  {feedback || "\u00A0"}
+                </p>
+                <div className="sr-only" aria-live="polite">
+                  {srStatus}
+                </div>
 
-              <Progress
-                value={progressValue}
-                className="h-3 w-full max-w-xl shrink-0"
-                aria-label="Students picked this round"
-              />
-
-              <div className="flex shrink-0 flex-wrap items-center justify-center gap-3 pt-1">
-                <Button
-                  size="lg"
-                  className="w-56"
-                  onClick={pick}
-                  disabled={picking}
-                >
-                  <Dices />
-                  Pick a student
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-36"
-                  onClick={newRound}
-                >
-                  <RotateCcw />
-                  New round
-                </Button>
-              </div>
-
-              <p className="flex h-5 w-full shrink-0 items-center justify-center overflow-hidden text-center text-sm whitespace-nowrap text-muted-foreground">
-                {feedback || "\u00A0"}
-              </p>
-              <div className="sr-only" aria-live="polite">
-                {srStatus}
-              </div>
-
-              <Separator className="shrink-0" />
-
-              <div className="grid w-full min-h-0 flex-1 grid-cols-1 gap-4 pt-1 md:grid-cols-2">
-                <section
-                  aria-label="Your class list"
-                  className="flex min-h-0 flex-col gap-1.5 rounded-xl border p-3 text-left"
-                >
-                  <Label className="text-base font-semibold text-foreground">
-                    Your class list
-                  </Label>
-                  <p className="text-sm text-muted-foreground [@media(max-height:760px)]:hidden">
-                    One name per line. Saved automatically in this browser —
-                    no account needed.
-                  </p>
-                  <Textarea
-                    ref={textareaRef}
-                    value={draft}
-                    onChange={(e) => handleDraftChange(e.target.value)}
-                    placeholder={"Amara\nBen\nChanya\nDavid\n…"}
-                    aria-label="Class list, one name per line"
-                    className="min-h-0 flex-1 resize-none field-sizing-fixed"
-                  />
-                  <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    <Input
-                      ref={listNameRef}
-                      value={listName}
-                      onChange={(e) => setListName(e.target.value)}
-                      placeholder="List name (e.g. Year 5A)"
-                      aria-label="List name"
-                      className="h-10 min-w-36 flex-1"
-                    />
-                    <Button
-                      variant="secondary"
-                      className="h-10 w-24"
-                      onClick={saveList}
-                    >
-                      Save list
-                    </Button>
-                  </div>
-                  <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    <Select
-                      value={selectedList}
-                      onValueChange={setSelectedList}
-                    >
-                      <SelectTrigger
-                        id="saved-lists-select"
-                        aria-label="Saved lists"
-                        className="h-10 min-w-36 flex-1"
-                      >
-                        <SelectValue placeholder="Saved lists…" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {savedLists.map((name) => (
-                          <SelectItem key={name} value={name}>
-                            {name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="outline"
-                      className="h-10 w-20"
-                      onClick={loadList}
-                    >
-                      Load
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="h-10 w-20"
-                      onClick={deleteList}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                  <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    <Button variant="outline" className="h-10" onClick={loadSample}>
-                      Try a sample class
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="h-10 w-20"
-                      onClick={clearList}
-                    >
-                      Clear
-                    </Button>
-                    <p className="flex h-5 min-w-24 flex-1 items-center overflow-hidden text-sm whitespace-nowrap text-muted-foreground">
-                      {listFeedback || "\u00A0"}
-                    </p>
-                  </div>
-                </section>
+                <Separator className="shrink-0" />
 
                 <section
                   aria-label="Who's still waiting?"
-                  className="flex min-h-0 flex-col gap-1.5 rounded-xl border p-3 text-left"
+                  className="flex w-full min-h-0 flex-1 flex-col gap-1.5 rounded-xl border p-3 text-left"
                 >
                   <Label className="text-base font-semibold text-foreground">
                     Who&apos;s still waiting?
@@ -697,7 +597,7 @@ export default function App() {
                     Names are ticked off once picked this round. When everyone
                     has had a turn, a new round starts automatically.
                   </p>
-                  <div className="min-h-0 flex-1 overflow-y-auto">
+                  <div>
                     {names.length === 0 ? (
                       <span className="text-sm text-muted-foreground">
                         No names yet.
@@ -724,28 +624,117 @@ export default function App() {
                     )}
                   </div>
                 </section>
+
+                <Separator className="shrink-0" />
+
+                <div className="flex shrink-0 flex-wrap items-center justify-center gap-6 pt-1">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="sound"
+                      checked={soundOn}
+                      onCheckedChange={setSoundOn}
+                    />
+                    <Label htmlFor="sound">Sound</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="animation"
+                      checked={animOn}
+                      onCheckedChange={setAnimOn}
+                    />
+                    <Label htmlFor="animation">Spinning animation</Label>
+                  </div>
+                </div>
               </div>
 
-              <Separator className="shrink-0" />
-
-              <div className="flex shrink-0 flex-wrap items-center justify-center gap-6 pt-1">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="sound"
-                    checked={soundOn}
-                    onCheckedChange={setSoundOn}
+              {/* Class list panel — second on mobile, left column on md+ */}
+              <section
+                aria-label="Your class list"
+                className="flex min-h-[420px] flex-col gap-1.5 rounded-xl border p-3 text-left md:col-start-1 md:row-start-1 md:min-h-0"
+              >
+                <Label className="text-base font-semibold text-foreground">
+                  Your class list
+                </Label>
+                <p className="text-sm text-muted-foreground [@media(max-height:760px)]:hidden">
+                  One name per line. Saved automatically in this browser —
+                  no account needed.
+                </p>
+                <Textarea
+                  ref={textareaRef}
+                  value={draft}
+                  onChange={(e) => handleDraftChange(e.target.value)}
+                  placeholder={"Amara\nBen\nChanya\nDavid\n…"}
+                  aria-label="Class list, one name per line"
+                  className="min-h-56 flex-1 resize-none field-sizing-fixed"
+                />
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  <Input
+                    ref={listNameRef}
+                    value={listName}
+                    onChange={(e) => setListName(e.target.value)}
+                    placeholder="List name (e.g. Year 5A)"
+                    aria-label="List name"
+                    className="h-10 min-w-36 flex-1"
                   />
-                  <Label htmlFor="sound">Sound</Label>
+                  <Button
+                    variant="secondary"
+                    className="h-10 w-24"
+                    onClick={saveList}
+                  >
+                    Save list
+                  </Button>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="animation"
-                    checked={animOn}
-                    onCheckedChange={setAnimOn}
-                  />
-                  <Label htmlFor="animation">Spinning animation</Label>
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  <Select
+                    value={selectedList}
+                    onValueChange={setSelectedList}
+                  >
+                    <SelectTrigger
+                      id="saved-lists-select"
+                      aria-label="Saved lists"
+                      className="h-10 min-w-36 flex-1"
+                    >
+                      <SelectValue placeholder="Saved lists…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {savedLists.map((name) => (
+                        <SelectItem key={name} value={name}>
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    className="h-10 w-20"
+                    onClick={loadList}
+                  >
+                    Load
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-10 w-20"
+                    onClick={deleteList}
+                  >
+                    Delete
+                  </Button>
                 </div>
-              </div>
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  <Button variant="outline" className="h-10" onClick={loadSample}>
+                    Try a sample class
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-10 w-20"
+                    onClick={clearList}
+                  >
+                    Clear
+                  </Button>
+                  <p className="flex h-5 min-w-24 flex-1 items-center overflow-hidden text-sm whitespace-nowrap text-muted-foreground">
+                    {listFeedback || "\u00A0"}
+                  </p>
+                </div>
+              </section>
             </CardContent>
 
             <CardFooter className="flex flex-col items-center gap-3">
