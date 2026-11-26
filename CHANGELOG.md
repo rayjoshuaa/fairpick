@@ -1,5 +1,25 @@
 # Changelog
 
+## v3.1.0 — two-column layout, session-only saved lists
+
+- Layout redesigned: on desktop the class list is now a full-height
+  panel on the left and the picker (round badge, picked name, progress,
+  Pick/New round, who's-still-waiting, sound/animation switches) sits
+  in a column on the right. The class list box gets the full panel
+  height with a generous minimum, so it can no longer be squeezed down
+  to one line. On mobile the picker stacks above the class list.
+- The page is no longer locked to one screen: it grows and scrolls
+  naturally when content needs more room, on mobile and desktop alike,
+  so nothing overlaps at phone width.
+- Saved lists are no longer permanent (Ray's instruction): they are
+  kept in memory only and are erased when the page is reloaded. Lists
+  stored by older versions in `localStorage` (`fairpick_lists`) are
+  removed automatically when the app loads.
+- The typed class list draft (`fairpick_draft`) and the round state
+  (`fairpick_state`) still autosave in the browser, unchanged.
+- No other behaviour changes: same fairness engine, rounds, spin
+  animation and sounds, keyboard shortcuts and tab title.
+
 ## v3.0.3 — class list panel fixed
 
 - The sample/clear buttons and the panel feedback now share one
